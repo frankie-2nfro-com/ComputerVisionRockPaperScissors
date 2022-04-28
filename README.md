@@ -12,3 +12,14 @@ pip list > requirements.txt
 ```
 
 However, the environment setup in my MacBookPro which is using M1 CPU is failure to run the program. The keras and tensorflow library cannot be configured normally. I need to search in google to see if there is any way to solve the problem. 
+
+## Milestone 3
+Add code to implement the game by manual input. And for future camera playing, the play() function will have a parameter to set the user choice. If having that parameter input to the function, it will bypass getting user choice from the standard input. 
+
+```python
+play() #get user choice from standard input
+
+play('R') #directly pass user choice to play the game
+```
+
+Details you can check manual_rps.py
