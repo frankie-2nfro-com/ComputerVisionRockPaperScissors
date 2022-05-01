@@ -63,3 +63,5 @@ This scene show winning background. User can press 'c' button to jump back to In
 #### LoseScene
 This scene show lose background. User can press 'c' button to jump back to IntroScene.
 
+## Conclusions
+As the visual classifier is generated from Teachable-Machine. The accuracy is not good actually. So to improve the project, I think I should have a better classifier. Also, instead of the whole screen classifying rock, paper or scissors, it will be better to know where is coordinates in the captured picture. It will make more possibility of the game development 
