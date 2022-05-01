@@ -23,3 +23,43 @@ play('R') #directly pass user choice to play the game
 ```
 
 Details you can check manual_rps.py
+
+## Milestone 4
+Integrate the visual classifier to the game and make the game playable with webcam. It is quite straight forward to make everything work. However, to make the game more funny and improve the user experience, I need to change the base structure of the program to be similar with an game engine. So I create the GameEngine, Scene as the base class. 
+
+### GameEngine ###
+GameEngine is the heart of the structure. The make loop of the program is here and it dispatch all Video capture, Timeout event and Keyboard event to all other scenes. Scene is the screen of the game. Like this project, I create IntroScene, OpponentScene, PlayingScene, WinScene and LoseScene. 
+
+### GameScene ###
+GameScene will have a update() function which will be call for every heart beat of GameEngine. And for keyboard detected and timeout events will also be called when GameEngine triggered. 
+
+### Classes of the RockPaperScissors ###
+I create following classes for this project:
+
+#### RockPaperScissorsGame ####
+```python
+class RockPaperScissorsGame(GameraGameEngine):
+	def setup(self):
+		self.registerScene("INTRO", IntroductionScene(self))
+		self.registerScene("OPPONENT", OpponentScene(self))
+		self.registerScene("PLAYING", PlayingScene(self))
+		self.registerScene("WIN", WinScene(self))
+		self.registerScene("LOSE", LoseScene(self))
+		self.initScene("INTRO")
+```
+
+#### IntroScene ####
+This scene is the cover of the game and just with a background and a continue message. User press 'c' button to jump to OpponentScene
+
+#### OpponentScene ####
+This scene is for player to select one opponent by the visual classifier. User press 'c' button to jump to PlayingScene with the selected opponent
+
+#### PlayingScene ####
+This scene is base on the game requirement to play rock-paper-scissors until either player or computer win three games firstly. If player win, it will jump to WinScene. Otherwise, it will jump to LoseScene
+
+#### WinScene ####
+This scene show winning background. User can press 'c' button to jump back to IntroScene.
+
+#### LoseScene
+This scene show lose background. User can press 'c' button to jump back to IntroScene.
+
