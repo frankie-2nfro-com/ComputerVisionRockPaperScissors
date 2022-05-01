@@ -5,16 +5,14 @@ import numpy as np
 
 # TODO: take out to another lib file...
 def add_alpha_channel(img):
-	""" 为jpg图像添加alpha通道 """
- 
-	b_channel, g_channel, r_channel = cv2.split(img) # 剥离jpg图像通道
-	alpha_channel = np.ones(b_channel.shape, dtype=b_channel.dtype) * 255 # 创建Alpha通道
- 
-	img_new = cv2.merge((b_channel, g_channel, r_channel, alpha_channel)) # 融合通道
+	# add a alpha channel (4th) for jpg (only have three channels)
+	b_channel, g_channel, r_channel = cv2.split(img) 						# get each jpg channel
+	alpha_channel = np.ones(b_channel.shape, dtype=b_channel.dtype) * 255 	# create addition Alpha channel
+	img_new = cv2.merge((b_channel, g_channel, r_channel, alpha_channel)) 	# merge the channel
 	return img_new
 
 def merge_img(jpg_img, png_img, y1, y2, x1, x2):
-	# 判断jpg图像是否已经为4通道
+	# check if jpg_img already 4 channel, otherwise call add_alpha_channel to add to 4 channel
 	if jpg_img.shape[2] == 3:
 		jpg_img = add_alpha_channel(jpg_img)
 	
