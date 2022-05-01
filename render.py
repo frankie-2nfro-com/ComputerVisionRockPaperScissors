@@ -3,7 +3,7 @@ import numpy as np
 
 # Function to handle all opencv2 graphic handleing and rendering
 
-# TODO: take out to another lib file...
+
 def add_alpha_channel(img):
 	# add a alpha channel (4th) for jpg (only have three channels)
 	b_channel, g_channel, r_channel = cv2.split(img) 						# get each jpg channel
@@ -11,14 +11,15 @@ def add_alpha_channel(img):
 	img_new = cv2.merge((b_channel, g_channel, r_channel, alpha_channel)) 	# merge the channel
 	return img_new
 
+
 def merge_img(jpg_img, png_img, y1, y2, x1, x2):
 	# check if jpg_img already 4 channel, otherwise call add_alpha_channel to add to 4 channel
 	if jpg_img.shape[2] == 3:
 		jpg_img = add_alpha_channel(jpg_img)
 	
 	'''
-	当叠加图像时，可能因为叠加位置设置不当，导致png图像的边界超过背景jpg图像，而程序报错
-	这里设定一系列叠加位置的限制，可以满足png图像超出jpg图像范围时，依然可以正常叠加
+	when merging two image, it will raise error if the positon and size parameters error. 
+	so make adjustment to make merging without exception
 	'''
 	yy1 = 0
 	yy2 = png_img.shape[0]
@@ -38,11 +39,11 @@ def merge_img(jpg_img, png_img, y1, y2, x1, x2):
 		yy2 = png_img.shape[0] - (y2 - jpg_img.shape[0])
 		y2 = jpg_img.shape[0]
  
-	# 获取要覆盖图像的alpha值，将像素值除以255，使值保持在0-1之间
+	# get png alpha, need to divide 255 to get the value between 0-1
 	alpha_png = png_img[yy1:yy2,xx1:xx2,3] / 255.0
 	alpha_jpg = 1 - alpha_png
 	
-	# 开始叠加
+	# merging
 	for c in range(0,3):
 		jpg_img[y1:y2, x1:x2, c] = ((alpha_jpg*jpg_img[y1:y2,x1:x2,c]) + (alpha_png*png_img[yy1:yy2,xx1:xx2,c]))
  
@@ -50,7 +51,6 @@ def merge_img(jpg_img, png_img, y1, y2, x1, x2):
 	img = cv2.cvtColor(jpg_img, cv2.COLOR_BGRA2BGR)
 
 	return img
-
 
 
 # Animation Engine
