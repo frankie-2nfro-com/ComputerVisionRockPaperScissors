@@ -3,6 +3,13 @@ import numpy as np
 
 # Function to handle all opencv2 graphic handleing and rendering
 
+# some ref:
+"""
+https://note.nkmk.me/en/python-pillow-putalpha/
+https://fontmeme.com/fancy-fonts/
+https://wallpaperboat.com/squid-game-wallpapers
+"""
+
 
 def add_alpha_channel(img):
 	# add a alpha channel (4th) for jpg (only have three channels)

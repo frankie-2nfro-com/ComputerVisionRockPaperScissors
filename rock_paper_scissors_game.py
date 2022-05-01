@@ -14,5 +14,4 @@ class RockPaperScissorsGame(GameraGameEngine):
 		self.registerScene("LOSE", LoseScene(self))
 		self.initScene("INTRO")
 
-
 RockPaperScissorsGame(0, 'Computer Vision Rock-Paper-Scissors')
