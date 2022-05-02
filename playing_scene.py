@@ -21,7 +21,6 @@ class PlayingScene(CameraGameScene):
 
 			
 	def reset(self):
-		self.addContent = False;
 		self.computer_choice = "NIL";
 		self.user_choice = "NIL";
 		self.countDownShowing = None;
@@ -44,7 +43,6 @@ class PlayingScene(CameraGameScene):
 					self.delTimeout("AFTER_ROUND_RESULT")   # cancel timeout
 
 				self.state = "COUNTDOWN";
-				self.addContent = False;
 				self.setTimeout(0, "SHOW3")
 				self.setTimeout(1, "SHOW2")
 				self.setTimeout(2, "SHOW1")
