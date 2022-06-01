@@ -81,7 +81,7 @@ Finally I find a hand detection model in MediaPipe. And it will return the diffe
 
 After improving the hand detection, I added some scenes to make the game more funny.
 
-```
+```python
 class RockPaperScissorsGame(CameraGameEngine):
 	def setup(self):
 		self.registerScene("INTRO", IntroductionScene(self))
