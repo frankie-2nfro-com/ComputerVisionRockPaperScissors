@@ -1,0 +1,5 @@
+keras==2.8.0
+mediapipe==0.8.10
+numpy==1.22.3
+opencv_contrib_python==4.5.5.64
+Pillow==9.1.1

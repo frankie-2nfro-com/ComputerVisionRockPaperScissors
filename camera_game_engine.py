@@ -1,213 +1,264 @@
 import cv2
-import random
 from datetime import datetime, timedelta
+from render import showPng
+from render import showTextByThread, showLineByThread, showBoxByThread, showJpegByThread 
+from render import showRectangleByThread, showCaptureVideoByThread, showSnapshotByThread
 import numpy as np
-import time
-from render import animate, showText, showLine, showBox, showJpeg, showPng
-from render import showCaptureVideo, showSnapshot
+import random
 
 
 
-
-
-class GameraGameEngine:
-	def __init__(self, camera_id=0, title="Camera Game"):
-		# Stage attributes
+class CameraGameEngine:
+	def __init__(self, title="Camera Game", camera_id=0):
+		# attributes
 		self.camera_id = camera_id
 		self.title = title
-		self.terminateFlag = False
-
-		self.timeoutList = [];
-		
-		self.scene = {}
 		self.currentScene = None
 		self.comingScene = None
-		
-		self.content = {}
-		self.contentAnimationState = {}
-		
-		self.lastFrameTime = 0
-		self.fps = 0
+		self.frame = None 				# display frame
+		self.originalFrame = None		# original captured image
+		self.snapshot = None			# store frame of a moment  
+		#self.interfaceFrame = None
+		#self.lastFrameTime = 0			# for calculate frame per second
+		#self.fps = 0					# current fps
 
-		self.stopCapture = False
-		self.originalFrame = None
-		self.snapshot = None
-
-		self.globalData = {}
-
-		self.setup()
+		self.__stopCapture = False
+		self.__terminateFlag = False
+		self.__timeoutList = []
+		self.__globalData = {}
+		self.__scene = {}
+		self.__content = {}
+		self.__contentAnimationState = {}
 
 		# define a video capture object
-		self.vid = cv2.VideoCapture(camera_id)
-		ret, self.frame = self.vid.read()
+		self.vid = cv2.VideoCapture(self.camera_id)
+
+		# first capture to get the self.frame for other function setup
+		success, img = self.vid.read()
+		assert success, "Webcam cannot return image properly. Please check the device."
+
+		self.frame = cv2.flip(img, 1)
+
+		# create interface layer, actually static interface should print on here to reduce rendering work load
+		#h, w, c = self.frame.shape
+		#self.interfaceFrame = np.zeros((h, w, 3), dtype=np.uint8)
+
+		self.__main()
+
+
+	def __main(self):
+		# life cycle of camera game
+		self.setup()
 
 		while True:
-			if self.terminateFlag:
-				break;
+			if self.__terminateFlag:
+				break
 
-			if self.stopCapture is False:
+			if self.__stopCapture is False:
 				# Capture the video frame by frame
-				ret, self.frame = self.vid.read()
+				success, img = self.vid.read()
+				if not success:			# skip error frame
+					continue  
+				self.frame = cv2.flip(img, 1)				# mirror the screen. 
+				self.originalFrame = cv2.flip(img, 1)		# mirror the screen. 
+				self.originalFrame.flags.writeable = False
 
-				# mirror the screen captured by webcam to have better user experience
-				self.originalFrame = cv2.flip(self.frame, 1)
-				self.frame = cv2.flip(self.frame, 1)		
-
-			self.checkTimeout()
-			self.update()
-			self.render()
-			self.afterRender()
+			self.__checkTimeout()
+			self.__update()
+			self.__render()
+			self.__afterRender()
 
 			# get user input 
-			waitkey = cv2.waitKey(1)
-			self.keyIn(waitkey)
+			self.keyIn(cv2.waitKey(1))
 
 		# After the loop release the cap object
 		self.vid.release()
 		# Destroy all the windows
 		cv2.destroyAllWindows()
 
+
 	def setup(self):
 		pass
 
-	def update(self):
+
+	def __update(self):
 		if self.currentScene != None:
 			# scene will overload update() for preparing elements 
-			self.scene[self.currentScene].update();
+			self.__scene[self.currentScene].update()
 
 			# scene will publish elements to stage
-			self.scene[self.currentScene].commit();
+			self.__setContent(self.__scene[self.currentScene].elements)
 
-	def render(self):
+
+	def __render(self):
 		#render add on content
-		for key in self.content.keys():
-			element = self.content[key];
+		for key in self.__content.keys():
+			element = self.__content[key]
 
 			# simple animation
-			x, y, w, h, a = animate(self, key, element); 		# go through animation engine
+			x, y, w, h, a = self.__animate(key, element)		# go through animation engine
 
 			if element["type"] == "text":
-				showText(self, x, y, element["message"], element["font"], element["size"], element["color"], element["thickness"])
+				#showText(self.frame, x, y, element["message"], element["font"], element["size"], element["color"], element["thickness"])
+				showTextByThread(self.frame, x, y, element["message"], element["font"], element["size"], element["color"], element["thickness"]).join()
 			elif element["type"] == "jpg":
-				showJpeg(self, element['file'], x, y, w, h)
+				#showJpeg(self.frame, element['file'], x, y, w, h)
+				showJpegByThread(self.frame, element['file'], x, y, w, h).join()
 			elif element["type"] == "png":
-				showPng(self, element['file'], x, y, w, h)
+				self.frame = showPng(self.frame, element['file'], x, y, w, h)	# self.frame is pass by value, so need to return the merged image
 			elif element["type"] == "line":
-				color = (0, 0, 0)		# default
-				if "color" in element:
-					color = element["color"]
-				showLine(self, x, y, element["x2"], element["y2"], color, element["thickness"])
+				#showLine(self.frame, x, y, element["x2"], element["y2"], color, element["thickness"])
+				showLineByThread(self.frame, x, y, element["x2"], element["y2"], element.get("color", (0,0,0)), element.get("thickness", 1)).join()
 			elif element["type"] == "box":
-				color = (0, 0, 0)		# default
-				if "color" in element:
-					color = element["color"]
-				showBox(self, x, y, element["w"], element["h"], color, element["thickness"])
+				#showBox(self.frame, x, y, element["w"], element["h"], color, element["thickness"])
+				showBoxByThread(self.frame, x, y, element["w"], element["h"], element.get("color", (0,0,0)), element.get("thickness", 1)).join()
+			elif element["type"] == "rect":
+				#showRectangle(self.frame, x, y, element["x2"], element["y2"], color, element["thickness"])
+				showRectangleByThread(self.frame, x, y, element["x2"], element["y2"], element.get("color", (0,0,0))).join()
 			elif element["type"] == "pip":
-				showCaptureVideo(self, x, y, element["w"], element["h"])
+				#showCaptureVideo(self, x, y, element["w"], element["h"])
+				showCaptureVideoByThread(self, x, y, element["w"], element["h"]).join()
 			elif element["type"] == "snapshot":
 				if self.snapshot is not None:
-					showSnapshot(self, x, y, element["w"], element["h"])
+					#showSnapshot(self, x, y, element["w"], element["h"])
+					showSnapshotByThread(self, x, y, element["w"], element["h"]).join()
+			elif element["type"] == "mimage":
+
+				memory_image = element["fimg"]
+				to_image = element["timg"]
+				hh, hw, hc = memory_image.shape
+				h, w, c = to_image.shape
+				if hh>0 and hw>0 and h>0 and w>0:
+					hx = element["x"]
+					hy = element["y"]
+					to_image[hy:hy+hh, hx:hx+hw] = memory_image
 
 		# calculate fps
-		currentFrameTime = time.time()
-		self.fps = 1 / (currentFrameTime - self.lastFrameTime)
-		self.lastFrameTime = currentFrameTime
+		#currentFrameTime = time.time()
+		#self.fps = 1 / (currentFrameTime - self.lastFrameTime)
+		#self.lastFrameTime = currentFrameTime
 		#print(f"FPS:{int(self.fps)}")
+
+		# interface interface always on top
+		#self.frame = cv2.bitwise_and(self.frame, self.interfaceFrame)	
+		#self.frame = cv2.addWeighted(self.frame, 1, self.interfaceFrame, 1, 0)
+		#showLine(self.interfaceFrame, 0, 0, 1000, 100, (0,255,0), 3)			# test layer
 
 		# Display the resulting frame
 		cv2.imshow(self.title, self.frame)
 
-	def afterRender(self):
-		self.scene[self.currentScene].afterRender()
+	def __afterRender(self):
+		self.__scene[self.currentScene].afterRender()
 
 	def takeSnapshot(self):
-		self.snapshot = self.originalFrame;
+		self.snapshot = self.originalFrame
 
-	def getSnapshot(self):
-		return self.originalFrame
+	#def getInterfaceImage(self):
+	#	return self.interfaceFrame
 
 	def keyIn(self, k):
 		if k != -1 and self.currentScene is not None:
-			self.scene[self.currentScene].keyInToggle(k)
+			self.__scene[self.currentScene].keyInToggle(k)
 
 	def setTimeout(self, second, name):
 		# calculate expiry datetime
-		self.timeoutList.append([datetime.now() + timedelta(seconds=second), name])
+		self.__timeoutList.append([datetime.now() + timedelta(seconds=second), name])
 
 	def delTimeout(self, name):
-		for index in range(len(self.timeoutList)):
-			if self.timeoutList[index][1] == name:
-				self.timeoutList.pop(index)
+		if name is None:
+			self.__timeoutList = []
+		else:
+			for index in range(len(self.__timeoutList)):
+				if self.__timeoutList[index][1] == name:
+					self.__timeoutList.pop(index)
 
-	def checkTimeout(self):
-		for index in range(len(self.timeoutList)):
-			timeout = self.timeoutList[index];
+	def __checkTimeout(self):
+		for index in range(len(self.__timeoutList)):
+			timeout = self.__timeoutList[index]
 			expiry = timeout[0]
 			eventName = timeout[1]
 			if datetime.now() >= expiry:
-				self.timeoutList.pop(index)
-				self.scene[self.currentScene].timeoutCallback(eventName)
-				break;	# wait another frame to handle
+				self.__timeoutList.pop(index)
+				self.__scene[self.currentScene].timeoutCallback(eventName)
+				break	# wait another frame to handle
 
 	def initScene(self, name):
 		if self.currentScene == None:
-			self.currentScene = name;
+			self.__setNextScene(name)
 
 	def registerScene(self, name, scene):
-		if name in self.scene:
-			return False;
-		self.scene[name] = scene;
+		if name not in self.__scene:	
+			self.__scene[name] = scene
 
-	def setNextScene(self, target):
-		if self.comingScene!=None or target not in self.scene:
-			return False;
+	def __setNextScene(self, target):
+		if self.comingScene!=None or target not in self.__scene:
+			return
 
 		# cancel existing timeout before jump to next scene
-		self.timeoutList = [];	
+		self.delTimeout(None)	
+
+		# clean up interface frame
+		#h, w, c = self.frame.shape
+		#self.interfaceFrame = np.zeros((h, w, 3), dtype=np.uint8)
 
 		# swap scene
 		self.comingScene = target
-		self.scene[self.comingScene].reset();
-		self.currentScene = self.comingScene;
-		self.comingScene = None;
+		self.__scene[self.comingScene].reset()
+		self.currentScene = self.comingScene
+		self.comingScene = None
 
-	def setContent(self, elements):
-		self.content = elements
+	def __setContent(self, elements):
+		self.__content = elements
 
 	def quit(self):
-		self.terminateFlag = True;
+		self.__terminateFlag = True
 
 	def setCapture(self, isCap):
-		self.stopCapture = not isCap
+		self.__stopCapture = not isCap
+
+	def setGameGlobalData(self, name, value):
+		self.__globalData[name] = value
+
+	def getGameGlobalData(self, name):
+		if name not in self.__globalData:
+			return None
+		return self.__globalData[name]
+
+	def jumpScene(self, targetScene):
+		self.__setNextScene(targetScene)
+
+	# Simple Animation Engine
+	def __animate(self, name, element):
+		x = element.get("x", 0)
+		y = element.get("y", 0)
+		width = element.get("w", 0)
+		height = element.get("h", 0)
+		alpha = element.get("alpha", 1)
+
+		if "animate" in element:
+			if element["animate"]=="shake":
+				x = x + random.randint(-5,5)
+				y = y + random.randint(-5,5)
+			elif element["animate"]=="jump":
+				val = 0;
+				if name in self.__contentAnimationState: 
+					val = self.__contentAnimationState[name]["yDelta"];
+					if val <= -10: 
+						val = 0
+					else:
+						val = val - 1;
+				y = y + val;
+				self.__contentAnimationState[name] = {"yDelta": val}
+
+		return x, y, width, height, alpha
 
 
 
-class CameraGameScene:
+class GameScene:
 	def __init__(self, stage):
 		self.stage = stage
 		self.elements = {}
-		self.setup();
-
-	def commit(self):
-		self.stage.setContent(self.elements)
-
-	def jumpScene(self, targetScene):
-		self.stage.setNextScene(targetScene)
-
-	def setTimeout(self, second, name):
-		# calculate expiry datetime
-		self.stage.setTimeout(second, name)
-
-	def delTimeout(self, name):
-		self.stage.delTimeout(name)
-
-	def setGameGlobalData(self, name, value):
-		self.stage.globalData[name] = value
-
-	def getGameGlobalData(self, name):
-		if name not in self.stage.globalData:
-			return None;
-		return self.stage.globalData[name]
+		self.setup()
 
 	def setup(self):
 		pass

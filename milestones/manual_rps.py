@@ -1,4 +1,4 @@
-import rps
+import milestones.rps as rps
 
 try:
 	while True:

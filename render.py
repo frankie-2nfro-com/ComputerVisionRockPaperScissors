@@ -1,13 +1,14 @@
 import cv2
 import numpy as np
+from threading import Thread
 
-# Function to handle all opencv2 graphic handleing and rendering
-
-# some ref:
+# some resource:
 """
+Image mask:
 https://note.nkmk.me/en/python-pillow-putalpha/
+
+Generate font effect as image:
 https://fontmeme.com/fancy-fonts/
-https://wallpaperboat.com/squid-game-wallpapers
 """
 
 
@@ -59,74 +60,70 @@ def merge_img(jpg_img, png_img, y1, y2, x1, x2):
 
 	return img
 
-
-# Animation Engine
-def animate(stage, name, element):
-	x = 0
-	y = 0
-	width = 0
-	height = 0
-	alpha = 1
-
-	if "x" in element:
-		x = element["x"]
-	
-	if "y" in element:
-		y = element["y"]
-	
-	if "w" in element:
-		width = element["w"]
-	
-	if "h" in element:
-		height = element["h"]
-
-	if "alpha" in element:
-		alpha = 1
-
-	if "animate" in element:
-		if element["animate"]=="shake":
-			x = x + random.randint(-5,5)
-			y = y + random.randint(-5,5)
-		elif element["animate"]=="jump":
-			val = 0;
-			if name in stage.contentAnimationState: 
-				val = stage.contentAnimationState[name]["yDelta"];
-				if val <= -10: 
-					val = 0
-				else:
-					val = val - 1;
-			y = y + val;
-			stage.contentAnimationState[name] = {"yDelta": val}
-
-	return x, y, width, height, alpha
+def showPng(frame, file, x, y, w, h):
+	overlay = cv2.imread(file, cv2.IMREAD_UNCHANGED)
+	frame = merge_img(frame, overlay, y, h+y, x, w+x)
+	return frame
 
 
+def showTextByThread(frame, x, y, text, font, size, color, thickness):
+	t = Thread(target=showText, args=(frame, x, y, text, font, size, color, thickness))
+	t.start()
+	return t
 
+def showText(frame, x, y, text, font, size, color, thickness):
+	cv2.putText(img=frame, text=text, org=(x, y), fontFace=font, fontScale=size, color=color,thickness=thickness)
 
-def showText(stage, x, y, text, font, size, color, thickness):
-	cv2.putText(img=stage.frame, text=text, org=(x, y), fontFace=font, fontScale=size, color=color,thickness=thickness)
+def showLineByThread(frame, x, y, x2, y2, color, thickness):
+	t = Thread(target=showLine, args=(frame, x, y, x2, y2, color, thickness))
+	t.start()
+	return t
 
-def showLine(stage, x, y, x2, y2, color, thickness):
-	cv2.line(stage.frame, (x, y), (x2,y2), color, thickness=thickness)
+def showLine(frame, x, y, x2, y2, color, thickness):
+	cv2.line(frame, (x, y), (x2,y2), color, thickness=thickness)
 
-def showBox(stage, x, y, w, h, color, thickness):
-	cv2.line(stage.frame, (x, y), (x+w,y), color, thickness=thickness)
-	cv2.line(stage.frame, (x, y), (x,y+h), color, thickness=thickness)
-	cv2.line(stage.frame, (x, y+h), (x+w,y+h), color, thickness=thickness)
-	cv2.line(stage.frame, (x+w, y), (x+w,y+h), color, thickness=thickness)
+def showBoxByThread(frame, x, y, w, h, color, thickness):
+	t = Thread(target=showBox, args=(frame, x, y, w, h, color, thickness))
+	t.start()
+	return t
 
-def showJpeg(stage, file, x, y, w, h):
+def showBox(frame, x, y, w, h, color, thickness):
+	cv2.line(frame, (x, y), (x+w,y), color, thickness=thickness)
+	cv2.line(frame, (x, y), (x,y+h), color, thickness=thickness)
+	cv2.line(frame, (x, y+h), (x+w,y+h), color, thickness=thickness)
+	cv2.line(frame, (x+w, y), (x+w,y+h), color, thickness=thickness)
+
+def showRectangleByThread(frame, x, y, x2, y2, color):
+	t = Thread(target=showRectangle, args=(frame, x, y, x2, y2, color))
+	t.start()
+	return t
+
+def showRectangle(frame, x, y, x2, y2, color):
+	cv2.rectangle(frame, pt1=(x,y), pt2=(x2,y2), color=color, thickness=-1)
+
+def showJpegByThread(frame, file, x, y, w, h):
+	t = Thread(target=showJpeg, args=(frame, file, x, y, w, h))
+	t.start()
+	return t
+
+def showJpeg(frame, file, x, y, w, h):
 	img = cv2.imread(file)
 	resizeImage = cv2.resize(img, (w,h))	
-	stage.frame[y:h+y,x:w+x] = resizeImage
+	frame[y:h+y,x:w+x] = resizeImage
 
-def showPng(stage, file, x, y, w, h):
-	overlay = cv2.imread(file, cv2.IMREAD_UNCHANGED)
-	stage.frame = merge_img(stage.frame, overlay, y, h+y, x, w+x)
+def showCaptureVideoByThread(stage, x, y, w, h):
+	t = Thread(target=showCaptureVideo, args=(stage, x, y, w, h))
+	t.start()
+	return t
 
 def showCaptureVideo(stage, x, y, w, h):
 	pipImage = cv2.resize(stage.originalFrame, (w,h))	
 	stage.frame[y:h+y,x:w+x] = pipImage
+
+def showSnapshotByThread(stage, x, y, w, h):
+	t = Thread(target=showSnapshot, args=(stage, x, y, w, h))
+	t.start()
+	return t
 
 def showSnapshot(stage, x, y, w, h):
 	snapshotImage = cv2.resize(stage.snapshot, (w,h))	

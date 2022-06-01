@@ -1,16 +1,16 @@
-import rps
+import milestones.rps as rps
 import cv2
 from keras.models import load_model
 from PIL import Image, ImageOps
 import numpy as np
-import rps;
+import milestones.rps as rps;
 
 # for bug and want to resume webcam in mac: sudo killall VDCAssistant
 
 
 
 # Load the model
-model = load_model('keras_model.h5')
+model = load_model('./assets/models/keras_model.h5')
 
 # Create the array of the right shape to feed into the keras model
 # The 'length' or number of images you can put into the array is
