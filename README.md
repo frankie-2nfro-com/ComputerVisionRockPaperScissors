@@ -22,7 +22,7 @@ play() #get user choice from standard input
 play('R') #directly pass user choice to play the game
 ```
 
-Details you can check [manual_rps.py](https://github.com/frankie-2nfro-com/ComputerVisionRockPaperScissors/blob/main/manual_rps.py)
+Details you can check [manual_rps.py](https://github.com/frankie-2nfro-com/ComputerVisionRockPaperScissors/blob/main/milestones/manual_rps.py)
 
 ## Milestone 4
 Integrate the visual classifier to the game and make the game playable with webcam. It is quite straight forward to make everything work. However, to make the game more funny and improve the user experience, I need to change the base structure of the program to be similar with an game engine. So I create the GameEngine, Scene as the base class. 
