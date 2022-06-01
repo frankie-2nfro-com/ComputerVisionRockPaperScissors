@@ -96,3 +96,6 @@ class RockPaperScissorsGame(CameraGameEngine):
 if __name__ == '__main__':
 	RockPaperScissorsGame('Computer Vision Game: Rock-Paper-Scissors')
 ```
+
+## Presentation Slides
+You can find my presentation slides in [here](https://docs.google.com/presentation/d/1xRQRhqZOfxfVb8ymeItBXsuNoc_hV_35HR_vhhwPJPk/edit?usp=sharing)
