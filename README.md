@@ -75,3 +75,24 @@ This scene show lose background. User can press 'c' button to jump back to Intro
 As the visual classifier is generated from Teachable-Machine. The accuracy is not good actually. So to improve the project, I think I should have a better classifier. Also, instead of the whole screen classifying rock, paper or scissors for each screen captured, it will be better to detect the hand first. Comparing directly call the classifier for every webcam screen. I think detecting hand would be faster a lot. Only with hand detected and pass the picture to the classifier would increase the frame per second rate to the game. Also it will make more possibility for further enhancement. 
 
 This is the my first project in AiCore. I am happy with the process and let me know the missing parts of my previous developments. 
+
+## Add-on
+Finally I find a hand detection model in MediaPipe. And it will return the different points of the hand with location. It preforms well. But it is not able to run with Teachable-Machine as the tensorflow version for both model collapsed. So I use MediaPipe instead. Using the points of hand as the data to train a model to identify hand gesture is also easy. So I make this new model to classify hand gesture. 
+
+After improving the hand detection, I added some scenes to make the game more funny.
+
+```
+class RockPaperScissorsGame(CameraGameEngine):
+	def setup(self):
+		self.registerScene("INTRO", IntroductionScene(self))
+		self.registerScene("OPPONENT", OpponentScene(self))
+		self.registerScene("PLAYING", PlayingScene(self))
+		self.registerScene("WIN", WinScene(self))
+		self.registerScene("LOSE", LoseScene(self))
+		self.registerScene("SIGN", SignScene(self))
+		self.registerScene("PRIZE", PrizeScene(self))
+		self.initScene("INTRO")
+
+if __name__ == '__main__':
+	RockPaperScissorsGame('Computer Vision Game: Rock-Paper-Scissors')
+```
