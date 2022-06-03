@@ -1,6 +1,12 @@
 # ComputerVisionRockPaperScissors
 This github repository is storing the project development files of the Computer Vision Rock Paper Scissors game of AiCore course. And this README is for answering some questions of the project, description and some highlight infomation for the project milestones. 
 
+## Presentation Slides
+You can find my presentation slides in [here](https://docs.google.com/presentation/d/1xRQRhqZOfxfVb8ymeItBXsuNoc_hV_35HR_vhhwPJPk/edit?usp=sharing). It illustrates most of the details of this project. 
+
+## Demo Video
+Please see demo in [here](https://youtu.be/CY_ZGyGAJws).
+
 ## Milestone 1
 Train a vision classifier in the Teachable-Machine website with three set of images captured by the webcam namely Rock, Paper and Scissors. The generated model from the website has been downloaded and import to the code repository. And it will be loaded by the program and run to classify any Rock, Paper or Scissors are in the screen to trigger the program to react.
 
@@ -97,8 +103,4 @@ if __name__ == '__main__':
 	RockPaperScissorsGame('Computer Vision Game: Rock-Paper-Scissors')
 ```
 
-## Presentation Slides
-You can find my presentation slides in [here](https://docs.google.com/presentation/d/1xRQRhqZOfxfVb8ymeItBXsuNoc_hV_35HR_vhhwPJPk/edit?usp=sharing). It illustrates most of the details of this project. 
 
-## Demo Video
-Please see demo in [here](https://youtu.be/CY_ZGyGAJws).
