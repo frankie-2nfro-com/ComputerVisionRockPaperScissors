@@ -1,4 +1,4 @@
-# ComputerVisionRockPaperScissors
+# AiCore Project #1 - Computer Vision Rock Paper Scissors
 This github repository is storing the project development files of the Computer Vision Rock Paper Scissors game of AiCore course. And this README is for answering some questions of the project, description and some highlight infomation for the project milestones. 
 
 ## Presentation Slides
